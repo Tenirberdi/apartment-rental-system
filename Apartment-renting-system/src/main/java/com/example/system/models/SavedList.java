@@ -1,4 +1,4 @@
-package com.example.system.Entities;
+package com.example.system.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,19 +8,21 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "photos")
+@Table(name = "saved_list")
 @Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Photo {
+public class SavedList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique = true)
-    private String photoName;
 
     @ManyToOne
     @JoinColumn(nullable = false)
     private Ad ad;
+
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private User rentee;
 }

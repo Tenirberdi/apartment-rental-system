@@ -1,4 +1,4 @@
-package com.example.system.ErrorHandlers;
+package com.example.system.errorhandlers;
 
 
 import io.jsonwebtoken.JwtException;
@@ -11,9 +11,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 public class ExceptionHandlerFilter extends OncePerRequestFilter {
     @Override

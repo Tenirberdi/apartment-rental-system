@@ -1,4 +1,4 @@
-package com.example.system.Utils;
+package com.example.system.utilities;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;

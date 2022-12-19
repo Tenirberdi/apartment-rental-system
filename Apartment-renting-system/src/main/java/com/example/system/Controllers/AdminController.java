@@ -1,9 +1,9 @@
-package com.example.system.Controllers;
+package com.example.system.controllers;
 
-import com.example.system.DTOs.HouseTypeDTO;
-import com.example.system.DTOs.PromotionDTO;
-import com.example.system.Services.AdminService;
-import com.example.system.Services.UserService;
+import com.example.system.dtos.HouseTypeDTO;
+import com.example.system.dtos.PromotionDTO;
+import com.example.system.services.AdminService;
+import com.example.system.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import static com.example.system.EndPoints.URLs.*;
+import static com.example.system.endpoint.URLs.*;
 
 @RestController
 @RequestMapping(path = ADMIN_BASE_URL, produces = "application/json")

@@ -1,13 +1,13 @@
-package com.example.system.Controllers;
+package com.example.system.controllers;
 
-import com.example.system.DTOs.AuthenticationRequestDTO;
-import com.example.system.DTOs.SignUpDTO;
-import com.example.system.Entities.User;
-import com.example.system.Exceptions.CustomNotFoundException;
-import com.example.system.Security.Jwt.JwtTokenProvider;
-import com.example.system.Services.AuthenticationService;
-import com.example.system.Services.UserService;
-import com.example.system.Utils.MailUtil;
+import com.example.system.dtos.AuthenticationRequestDTO;
+import com.example.system.dtos.SignUpDTO;
+import com.example.system.models.User;
+import com.example.system.exceptions.CustomNotFoundException;
+import com.example.system.security.Jwt.JwtTokenProvider;
+import com.example.system.services.AuthenticationService;
+import com.example.system.services.UserService;
+import com.example.system.utilities.MailUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.bytebuddy.utility.RandomString;
@@ -16,8 +16,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,17 +24,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.mail.MessagingException;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotEmpty;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.example.system.EndPoints.URLs.*;
+import static com.example.system.endpoint.URLs.*;
 
 @RestController
 @RequestMapping(path = AUTHENTICATION_BASE_URL, produces = "application/json")

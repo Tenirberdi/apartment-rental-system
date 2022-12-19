@@ -1,13 +1,18 @@
-package com.example.system.Services;
+package com.example.system.services;
 
 
-import com.example.system.DTOs.*;
-import com.example.system.Entities.*;
-import com.example.system.Repositories.*;
-import com.example.system.Utils.Converter;
-import com.example.system.Utils.PhotoUtil;
+import com.example.system.dtos.*;
+import com.example.system.models.*;
+import com.example.system.repositories.*;
+import com.example.system.utilities.Converter;
+import com.example.system.utilities.PaginationUtility;
+import com.example.system.utilities.PhotoUtil;
+import com.example.system.utilities.ResponseMapper;
+import static com.example.system.utilities.UriBuilder.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.support.MutableSortDefinition;
 import org.springframework.beans.support.PagedListHolder;
+import org.springframework.beans.support.SortDefinition;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +25,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import static com.example.system.endpoint.URLs.*;
 
 import javax.validation.Valid;
 import java.sql.Date;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Validated
@@ -40,15 +47,19 @@ public class UserService {
     private final PhotoRepo photoRepo;
     private final Converter converter;
     private final SavedListRepo savedListRepo;
+    private final ResponseMapper responseMapper;
+
 
     @Autowired
     private Environment env;
     @Autowired
     private FilesStorageServiceImpl filesStorageService;
+    @Autowired
+    private PaginationUtility paginationUtility;
 
     private final PhotoUtil photoUtil;
     @Autowired
-    public UserService(ViewersRepo viewersRepo, PromotionExpirationRepo promotionExpirationRepo, UserRepo userRepo, AdRepo adRepo, PasswordEncoder passwordEncoder, RoleRepo roleRepo, HouseTypeRepo houseTypeRepo, PromotionTypeRepo promotionTypeRepo, PhotoRepo photoRepo, Converter converter, SavedListRepo savedListRepo, PhotoUtil photoUtil) {
+    public UserService(ViewersRepo viewersRepo, PromotionExpirationRepo promotionExpirationRepo, UserRepo userRepo, AdRepo adRepo, PasswordEncoder passwordEncoder, RoleRepo roleRepo, HouseTypeRepo houseTypeRepo, PromotionTypeRepo promotionTypeRepo, PhotoRepo photoRepo, Converter converter, SavedListRepo savedListRepo, ResponseMapper responseMapper, PhotoUtil photoUtil) {
         this.viewersRepo = viewersRepo;
         this.promotionExpirationRepo = promotionExpirationRepo;
         this.userRepo = userRepo;
@@ -59,11 +70,12 @@ public class UserService {
         this.photoRepo = photoRepo;
         this.converter = converter;
         this.savedListRepo = savedListRepo;
+        this.responseMapper = responseMapper;
         this.photoUtil = photoUtil;
     }
 
     //Users
-    public List<UserDTO> getUsers(){
+    public Map<String, ?> getUsers(int pageNumber, int pageSize, String search){
         List<UserDTO> users = new ArrayList<>();
         for (User user : userRepo.findAllByEnabled(true)) {
             UserDTO userDTO = UserDTO.builder()
@@ -74,26 +86,39 @@ public class UserService {
                     .photoURL(photoUtil.getUserPhotoURL(user.getPhotoName())).build();
             users.add(userDTO);
         }
-        return users;
+
+        users = users.stream().filter(a ->
+                a.getFullName().matches("(?i).*" + search + ".*") || a.getContactInfo().matches("(?i).*" + search + ".*")).collect(Collectors.toList());
+
+        PagedListHolder<?> pages = paginationUtility.getPages(users, pageNumber, pageSize);
+
+
+        return responseMapper.mapResponse(users, PaginationMetaDataDTO.builder()
+                .totalRecords(pages.getNrOfElements())
+                .totalPages(pages.getPageCount()).build(), PaginationLinksDTO.builder()
+                .firstPage(pages.getPageCount() < 2 ? null : buildUrl(USER_BASE_URL + USERS + "?page=" + pages.getFirstLinkedPage() + "&size=" + pages.getPageSize()))
+                .lastPage(pages.getPageCount() < 2 ? null : buildUrl(USER_BASE_URL + USERS + "?page=" + pages.getLastLinkedPage() + "&size=" + pages.getPageSize()))
+                .nextPage((pages.isLastPage() ? null: buildUrl(USER_BASE_URL + USERS + "?page=" +  (pages.getPage() + 1) + "&size=" + pages.getPageSize())))
+                .previousPage(pages.isFirstPage()? null : buildUrl(USER_BASE_URL + USERS + "?page=" + (pages.getPage() - 1) + "&size=" + pages.getPageSize())).build());
     }
 
-    public UserDTO getUserById(long id){
+    public Map<String, ?> getUserById(long id){
         if(userRepo.findById(id).isPresent()){
             User user = userRepo.findById(id).get();
-            return UserDTO.builder()
+            return responseMapper.mapResponse(UserDTO.builder()
                     .id(user.getId())
                     .fullName(user.getFullName())
                     .activeAds(adRepo.getActiveAdAmount(id))
                     .contactInfo(user.getContactInfo())
                     .photoURL(photoUtil.getUserPhotoURL(user.getPhotoName()))
-                    .build();
+                    .build());
         }
         return null;
 
     }
 
 
-    //Security
+    //security
     public User findByUsername(String username){
         return userRepo.findByUsername(username);
     }
@@ -108,30 +133,34 @@ public class UserService {
     }
 
     //Profile
-    public UserDTO getProfile(){
+    public Map<String,?> getProfile(){
         try {
         User currentUser = findByUsername(getCurrentUserUsername());
-        return UserDTO.builder()
+        UserDTO profile = UserDTO.builder()
                 .id(currentUser.getId())
                 .fullName(currentUser.getFullName())
                 .activeAds(adRepo.getActiveAdAmount(currentUser.getId()))
                 .photoURL(photoUtil.getUserPhotoURL(currentUser.getPhotoName()))
                 .contactInfo(currentUser.getContactInfo())
                 .build();
+
+        return responseMapper.mapResponse(profile);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
-    public void editProfile(@Valid UserDTO user, Map< String, MultipartFile> files){
+    public void editProfile(UserDTO user, Map< String, MultipartFile> files){
 //      possible to change only name, photo, phone number (pass also, but it's done separately)
         try{
-            User userEntity = findByUsername(getCurrentUserUsername());;
-
-            userEntity.setFullName(user.getFullName());
-            userEntity.setContactInfo(user.getContactInfo());
-
-            if(userEntity.getPhotoName() != null){
+            User userEntity = findByUsername(getCurrentUserUsername());
+            if(user.getFullName() != null && !user.getFullName().isEmpty()){
+                userEntity.setFullName(user.getFullName());
+            }
+            if(user.getContactInfo() != null && !user.getContactInfo().isEmpty()){
+                userEntity.setContactInfo(user.getContactInfo());
+            }
+            if(userEntity.getPhotoName() != null ){
                 filesStorageService.delete(userEntity.getPhotoName());
                 userEntity.setPhotoName(null);
             }
@@ -140,8 +169,10 @@ public class UserService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Allowed to upload only one photo for profile");
             }
             files.values().forEach(file -> {
-                String fileName = filesStorageService.save(file);
-                userEntity.setPhotoName(fileName);
+                if(!file.isEmpty()){
+                    String fileName = filesStorageService.save(file);
+                    userEntity.setPhotoName(fileName);
+                }
             });
 
             userRepo.save(userEntity);
@@ -171,17 +202,30 @@ public class UserService {
     }
 
 
-    //this feature is not implemented yet
-    public void recoverProfile(){
-        User currentUser = findByUsername(getCurrentUserUsername());
-        currentUser.setEnabled(true);
-        userRepo.save(currentUser);
-    }
+//    //this feature is not implemented yet
+//    public void recoverProfile(){
+//        User currentUser = findByUsername(getCurrentUserUsername());
+//        currentUser.setEnabled(true);
+//        userRepo.save(currentUser);
+//    }
 
     // Ads
-    public List<AdDTO> getUserAds(long userId){
+    public Map<String, ?> getUserAds(long userId, int page, int size, String search){
         if(userRepo.findById(userId).isPresent()){
-            return converter.convertAdViewsToAdDTOs(adRepo.getAds(userId));
+            List<AdDTO> ads = converter.convertAdViewsToAdDTOs(adRepo.getAds(userId)).stream().filter(a ->
+                    a.getTitle().matches("(?i).*" + search + ".*") || a.getDescription().matches("(?i).*" + search + ".*") || a.getFurniture().matches("(?i).*" + search + ".*") || a.getHouseType().matches("(?i).*" + search + ".*") || a.getLocation().matches("(?i).*" + search + ".*")).collect(Collectors.toList());
+            ;
+
+            PagedListHolder<?> pages = paginationUtility.getPages(ads, page, size);
+
+            return responseMapper.mapResponse(pages.getPageList(),PaginationMetaDataDTO.builder()
+                    .totalRecords(pages.getNrOfElements())
+                    .totalPages(pages.getPageCount()).build(), PaginationLinksDTO.builder()
+                    .firstPage(pages.getPageCount() < 2 ? null : buildUrl(USER_BASE_URL + ADS + "?page=" + pages.getFirstLinkedPage() + "&size=" + pages.getPageSize()))
+                    .lastPage(pages.getPageCount() < 2 ? null : buildUrl(USER_BASE_URL + ADS + "?page=" + pages.getLastLinkedPage() + "&size=" + pages.getPageSize()))
+                    .nextPage((pages.isLastPage() ? null: buildUrl(USER_BASE_URL + ADS + "?page=" +  (pages.getPage() + 1) + "&size=" + pages.getPageSize())))
+                    .previousPage(pages.isFirstPage()? null : buildUrl(USER_BASE_URL + ADS + "?page=" + (pages.getPage() - 1) + "&size=" + pages.getPageSize())).build());
+
         }
         return null;
     }
@@ -220,27 +264,22 @@ public class UserService {
 
     }
 
-    public Map<Object, Object> getAds(int currentPageNumber, int pageSize){
-        List<AdDTO> ads = converter.convertAdViewsToAdDTOs(adRepo.getAds());
+    public Map<String, ?> getAds(int page, int size, String search){
+        List<AdDTO> ads = converter.convertAdViewsToAdDTOs(adRepo.getAds()).stream().filter(a ->
+                a.getTitle().matches("(?i).*" + search + ".*") || a.getDescription().matches("(?i).*" + search + ".*") || a.getFurniture().matches("(?i).*" + search + ".*") || a.getHouseType().matches("(?i).*" + search + ".*") || a.getLocation().matches("(?i).*" + search + ".*") || a.getPricePerMonth().toString().matches("(?i).*" + search + ".*")).collect(Collectors.toList());
 
-        PagedListHolder<AdDTO> pages = new PagedListHolder<>(ads);
-        pages.setPage(currentPageNumber); //set current page number
-        pages.setPageSize(pageSize); // set the size of page
+        PagedListHolder<?> pages = paginationUtility.getPages(ads, page, size);
 
-        Map<Object, Object> response = new HashMap<>();
-
-        response.put("metadata", PaginationMetaDataDTO.builder()
-                .totalElementCount(pages.getNrOfElements())
-                .pageSize(pages.getPageSize())
-                .firstPage(pages.getFirstLinkedPage())
-                .currentPage(pages.getPage())
-                .lastPage(pages.getLastLinkedPage()).build());
-        response.put("data", pages.getPageList());
-
-        return response;
+        return responseMapper.mapResponse(pages.getPageList(),PaginationMetaDataDTO.builder()
+                .totalRecords(pages.getNrOfElements())
+                .totalPages(pages.getPageCount()).build(), PaginationLinksDTO.builder()
+                .firstPage(pages.getPageCount() < 2 ? null : buildUrl(USER_BASE_URL + ADS + "?page=" + pages.getFirstLinkedPage() + "&size=" + pages.getPageSize()))
+                .lastPage(pages.getPageCount() < 2 ? null : buildUrl(USER_BASE_URL + ADS + "?page=" + pages.getLastLinkedPage() + "&size=" + pages.getPageSize()))
+                .nextPage((pages.isLastPage() ? null: buildUrl(USER_BASE_URL + ADS + "?page=" +  (pages.getPage() + 1) + "&size=" + pages.getPageSize())))
+                .previousPage(pages.isFirstPage()? null : buildUrl(USER_BASE_URL + ADS + "?page=" + (pages.getPage() - 1) + "&size=" + pages.getPageSize())).build());
     }
 
-    public AdDTO getAd(long id){
+    public Map<String, ?> getAd(long id){
         if (adRepo.existsById(id)) {
             AdDTO ad = converter.convertAdViewToAdDTO(adRepo.getAdById(id));
 
@@ -250,21 +289,19 @@ public class UserService {
                 Viewers view = Viewers.builder().ad(adRepo.findById(id).get()).viewer(currentUser).build();
                 viewersRepo.save(view);
             }
-            return ad;
+            return responseMapper.mapResponse(ad);
         }
         return null;
     }
 
-    public void editAd(@Valid AdDTO ad, Map<String, MultipartFile> mapFiles){
+    public void editAd( AdDTO ad, Map<String, MultipartFile> mapFiles){
         User currentUser = findByUsername(getCurrentUserUsername());
 
         if(adRepo.existsById(ad.getId())){
             Ad adEntity = adRepo.findById(ad.getId()).get();
             if (adEntity.getRenter().getId() == currentUser.getId()) {
-                if(houseTypeRepo.existsByType(ad.getHouseType())){
 
                     // Photos
-
                     if(mapFiles.size() > 3){
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Allowed to upload max 3 advertisement photos");
                     }
@@ -282,26 +319,41 @@ public class UserService {
                         }
                     }
 
-
                     // Ad details
-                    adEntity.setTitle(ad.getTitle());
-                    adEntity.setDescription(ad.getDescription());
-                    adEntity.setPricePerMonth(ad.getPricePerMonth());
-                    adEntity.setTotalRoomAmount(ad.getTotalRoomAmount());
-                    adEntity.setBathRoomAmount(ad.getBathRoomAmount());
-                    adEntity.setBedRoomAmount(ad.getBedRoomAmount());
-                    adEntity.setKitchenRoomAmount(ad.getKitchenRoomAmount());
-                    adEntity.setArea(ad.getArea());
-                    adEntity.setWhichFloor(ad.getWhichFloor());
-                    adEntity.setFurniture(ad.getFurniture());
-                    adEntity.setLocation(ad.getLocation());
-                    adEntity.setAvailable(ad.getAvailable());
-                    adEntity.setHouseType(houseTypeRepo.findByType(ad.getHouseType()));
+                    if(ad.getTitle() != null && !ad.getTitle().isEmpty()){
+                        adEntity.setTitle(ad.getTitle());
+                    } if(ad.getDescription() != null && !ad.getDescription().isEmpty()){
+                        adEntity.setDescription(ad.getDescription());
+                    } if(ad.getPricePerMonth() != null && ad.getPricePerMonth() >= 0){
+                        adEntity.setPricePerMonth(ad.getPricePerMonth());
+                    } if(ad.getTotalRoomAmount() != null && ad.getTotalRoomAmount() > 0){
+                        adEntity.setTotalRoomAmount(ad.getTotalRoomAmount());
+                    } if(ad.getBathRoomAmount() != null && ad.getBedRoomAmount() >= 0){
+                        adEntity.setBathRoomAmount(ad.getBathRoomAmount());
+                    }if(ad.getBedRoomAmount() != null && ad.getBedRoomAmount() >= 0){
+                        adEntity.setBedRoomAmount(ad.getBedRoomAmount());
+                    } if(ad.getKitchenRoomAmount() != null && ad.getKitchenRoomAmount() >= 0){
+                        adEntity.setKitchenRoomAmount(ad.getKitchenRoomAmount());
+                    } if(ad.getArea() != null && ad.getArea() > 0){
+                        adEntity.setArea(ad.getArea());
+                    } if(ad.getWhichFloor() != null && ad.getWhichFloor() > 0){
+                        adEntity.setWhichFloor(ad.getWhichFloor());
+                    } if(ad.getFurniture() != null && !ad.getFurniture().isEmpty()){
+                        adEntity.setFurniture(ad.getFurniture());
+                    } if(ad.getLocation() != null && !ad.getLocation().isEmpty()){
+                        adEntity.setLocation(ad.getLocation());
+                    } if(ad.getAvailable() != null){
+                        adEntity.setAvailable(ad.getAvailable());
+                    } if(ad.getHouseType() != null && !ad.getHouseType().isEmpty()){
+                        if(houseTypeRepo.findByType(ad.getHouseType()) == null){
+                            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "House Type not found");
+                        }
+                        adEntity.setHouseType(houseTypeRepo.findByType(ad.getHouseType()));
+                    }
+
 
                     adRepo.save(adEntity);
-                }else {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "House Type not found");
-                }
+
 
             }else{
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can only edit ad of yours");
@@ -332,20 +384,29 @@ public class UserService {
     }
 
     //House Type
-    public List<HouseTypeDTO> getHouseTypes(){
+    public Map<String, ?> getHouseTypes(int page, int size){
         List<HouseTypeDTO> types = new ArrayList<>();
         houseTypeRepo.findAll().forEach(type -> {
             types.add(HouseTypeDTO.builder()
                     .id(type.getId())
                     .type(type.getType()).build());
         });
-        return types;
+
+        PagedListHolder<?> pages = paginationUtility.getPages(types, page, size);
+
+        return responseMapper.mapResponse(pages.getPageList(),PaginationMetaDataDTO.builder()
+                .totalRecords(pages.getNrOfElements())
+                .totalPages(pages.getPageCount()).build(), PaginationLinksDTO.builder()
+                .firstPage(pages.getPageCount() < 2 ? null : buildUrl(USER_BASE_URL + HOUSE_TYPES + "?page=" + pages.getFirstLinkedPage() + "&size=" + pages.getPageSize()))
+                .lastPage(pages.getPageCount() < 2 ? null : buildUrl(USER_BASE_URL + HOUSE_TYPES + "?page=" + pages.getLastLinkedPage() + "&size=" + pages.getPageSize()))
+                .nextPage((pages.isLastPage() ? null: buildUrl(USER_BASE_URL + HOUSE_TYPES + "?page=" +  (pages.getPage() + 1) + "&size=" + pages.getPageSize())))
+                .previousPage(pages.isFirstPage()? null : buildUrl(USER_BASE_URL + HOUSE_TYPES + "?page=" + (pages.getPage() - 1) + "&size=" + pages.getPageSize())).build());
     }
 
-    public HouseTypeDTO getHouseType(Long id){
+    public Map<String, ?> getHouseType(Long id){
         if (houseTypeRepo.findById(id).isPresent()) {
             HouseType type = houseTypeRepo.findById(id).get();
-            return HouseTypeDTO.builder().id(type.getId()).type(type.getType()).build();
+            return responseMapper.mapResponse(HouseTypeDTO.builder().id(type.getId()).type(type.getType()).build());
         }
 
         return null;
@@ -354,7 +415,7 @@ public class UserService {
 
 
     //promotions
-    public List<PromotionDTO> getPromotions(){
+    public Map<String, ?> getPromotions(){
         List<PromotionDTO> promotions = new ArrayList<>();
         promotionTypeRepo.findAll().forEach(promotion -> {
             promotions.add(PromotionDTO.builder()
@@ -363,13 +424,13 @@ public class UserService {
                     .ordered(promotion.getOrdered())
                     .price(promotion.getPrice())
                     .build());});
-        return promotions;
+        return responseMapper.mapResponse(promotions);
     }
 
-    public PromotionDTO getPromotion(Long id){
+    public Map<String, ?> getPromotion(Long id){
         if(promotionTypeRepo.findById(id).isPresent()){
             PromotionType promotion = promotionTypeRepo.findById(id).get();
-            return PromotionDTO.builder().id(promotion.getId()).ordered(promotion.getOrdered()).name(promotion.getName()).price(promotion.getPrice()).build();
+            return responseMapper.mapResponse(PromotionDTO.builder().id(promotion.getId()).ordered(promotion.getOrdered()).name(promotion.getName()).price(promotion.getPrice()).build());
         }
 
         return null;
@@ -378,6 +439,7 @@ public class UserService {
     @Scheduled(cron = "0 1 1 * * ?")
     @Transactional
     public void expirePromotion(){
+        System.out.println("Expiring promotions");
         promotionExpirationRepo.takeOffPromotionType();
         promotionExpirationRepo.expire();
     }
@@ -408,7 +470,7 @@ public class UserService {
 
    //Saved ad list
 
-    public ResponseEntity<?> triggerSavedList(Long adId){
+    public void triggerSavedList(Long adId){
         User user = findByUsername(getCurrentUserUsername());
         SavedList record = savedListRepo.findByAdIdAndRenteeId(adId, user.getId());
 
@@ -421,14 +483,13 @@ public class UserService {
             }else {
                 savedListRepo.delete(record);
             }
-            return ResponseEntity.noContent().build();
         }else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ad with id: " + adId + " not found");
         }
 
     }
 
-    public List<SavedListDTO> getMySavedList(){
+    public Map<String, ?> getMySavedList(int page, int size){
         User user = findByUsername(getCurrentUserUsername());
         List<SavedListDTO> list = new ArrayList<>();
 
@@ -442,7 +503,17 @@ public class UserService {
                     .available(ad.isAvailable())
                     .dateOfPosting(ad.getDateOfPosting())
                     .location(ad.getLocation()).build());});
-        return list;
+
+        PagedListHolder<?> pages = paginationUtility.getPages(list, page, size);
+
+        return responseMapper.mapResponse(pages.getPageList(),PaginationMetaDataDTO.builder()
+                .totalRecords(pages.getNrOfElements())
+                .totalPages(pages.getPageCount()).build(), PaginationLinksDTO.builder()
+                .firstPage(pages.getPageCount() < 2 ? null : buildUrl(USER_BASE_URL + SAVED_LIST + "?page=" + pages.getFirstLinkedPage() + "&size=" + pages.getPageSize()))
+                .lastPage(pages.getPageCount() < 2 ? null : buildUrl(USER_BASE_URL + SAVED_LIST + "?page=" + pages.getLastLinkedPage() + "&size=" + pages.getPageSize()))
+                .nextPage((pages.isLastPage() ? null: buildUrl(USER_BASE_URL + SAVED_LIST + "?page=" +  (pages.getPage() + 1) + "&size=" + pages.getPageSize())))
+                .previousPage(pages.isFirstPage()? null : buildUrl(USER_BASE_URL + SAVED_LIST + "?page=" + (pages.getPage() - 1) + "&size=" + pages.getPageSize())).build());
+
     }
 
 }

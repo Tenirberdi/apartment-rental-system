@@ -1,4 +1,4 @@
-package com.example.system.Entities;
+package com.example.system.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,13 +35,11 @@ public class Ad {
     private int kitchenRoomAmount;
     @Column(nullable = false)
     private int area;
-    @Column(columnDefinition = "int null default 1")
     private int whichFloor;
     @Column(columnDefinition = "varchar(100)")
     private String furniture;
     @Column(nullable = false)
     private String location;
-    @Column(columnDefinition = "date default CURRENT_DATE()", insertable = false)
     @Builder.Default
     private Date dateOfPosting = new java.sql.Date(System.currentTimeMillis());
     @Column(columnDefinition = "boolean default true")

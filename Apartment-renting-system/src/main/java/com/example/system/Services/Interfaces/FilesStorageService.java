@@ -1,4 +1,4 @@
-package com.example.system.Services.Interfaces;
+package com.example.system.services.Interfaces;
 
 import java.nio.file.Path;
 import java.util.stream.Stream;

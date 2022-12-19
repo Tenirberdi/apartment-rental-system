@@ -1,11 +1,10 @@
-package com.example.system.Repositories;
+package com.example.system.repositories;
 
-import com.example.system.Entities.User;
-import com.example.system.Projections.UserStatisticsView;
+import com.example.system.models.User;
+import com.example.system.projections.UserStatisticsView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,6 +16,8 @@ public interface UserRepo extends JpaRepository<User, Long> {
     List<User> findAllByEnabled(boolean enabled);
     User findByEmail(String email);
     User findByResetPasswordToken(String token);
+
+    void deleteByPhotoName(String photoName);
 
     // security
     @Modifying

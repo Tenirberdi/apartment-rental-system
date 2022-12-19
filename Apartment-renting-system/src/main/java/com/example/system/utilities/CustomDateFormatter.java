@@ -1,4 +1,4 @@
-package com.example.system.Utils;
+package com.example.system.utilities;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

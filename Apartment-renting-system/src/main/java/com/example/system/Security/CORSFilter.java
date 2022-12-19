@@ -1,4 +1,4 @@
-package com.example.system.Security;
+package com.example.system.security;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -22,7 +22,7 @@ public class CORSFilter implements Filter {
         response.setHeader("Access-Control-Allow-Methods", "*");
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers", "*");
-        response.addHeader("Access-Control-Expose-Headers", "Location");
+        response.addHeader("Access-Control-Expose-Headers", "Location, Content-Disposition");
 
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);

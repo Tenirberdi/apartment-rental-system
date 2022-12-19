@@ -1,6 +1,6 @@
-package com.example.system.Repositories;
+package com.example.system.repositories;
 
-import com.example.system.Entities.PromotionExpiration;
+import com.example.system.models.PromotionExpiration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

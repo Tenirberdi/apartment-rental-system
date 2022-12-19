@@ -1,8 +1,8 @@
-package com.example.system.Controllers;
+package com.example.system.controllers;
 
-import com.example.system.DTOs.AdDTO;
-import com.example.system.DTOs.UserDTO;
-import com.example.system.Services.UserService;
+import com.example.system.dtos.AdDTO;
+import com.example.system.dtos.UserDTO;
+import com.example.system.services.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,19 +13,16 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
-import static com.example.system.EndPoints.URLs.*;
+import static com.example.system.endpoint.URLs.*;
 @RestController
 @RequestMapping(path = USER_BASE_URL, produces = "application/json")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 @Validated
 public class UserController {
     private final UserService  userService;
@@ -42,10 +39,10 @@ public class UserController {
 
     @GetMapping(value = PROFILE)
     public ResponseEntity<?> getProfile() {
-        UserDTO profile = userService.getProfile();
-        return new ResponseEntity<>(profile, HttpStatus.OK);
+        return new ResponseEntity<>(userService.getProfile(), HttpStatus.OK);
     }
-    @PutMapping(PROFILE)
+
+    @PatchMapping(PROFILE)
     public ResponseEntity<?> editProfile(@NotEmpty @RequestParam("data") String data, MultipartHttpServletRequest request) throws JsonProcessingException {
         UserDTO userDTO = objectMapper.readValue(data, UserDTO.class);
         Map< String, MultipartFile> photos = request.getFileMap();
@@ -57,12 +54,12 @@ public class UserController {
         userService.deleteProfile();
         return ResponseEntity.noContent().build();
     }
-
-    @PatchMapping(PROFILE)
-    public ResponseEntity<?> recoverProfile(){
-        userService.recoverProfile();
-        return ResponseEntity.noContent().build();
-    }
+//
+//    @PatchMapping(PROFILE)
+//    public ResponseEntity<?> recoverProfile(){
+//        userService.recoverProfile();
+//        return ResponseEntity.noContent().build();
+//    }
 
     //Users
 
@@ -72,21 +69,21 @@ public class UserController {
     }
 
     @GetMapping(USERS)
-    public ResponseEntity<?> getUsers(){
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUsers());
+    public ResponseEntity<?> getUsers(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "10") int size, @RequestParam(value = "search", defaultValue = "") String search){
+        return ResponseEntity.status(HttpStatus.OK).body(userService.getUsers(page, size, search));
     }
 
 
     //Ads
 
     @GetMapping(ADS)
-    public ResponseEntity<?> getAds(@RequestParam(value = "page", required = false, defaultValue = "0") int page, @RequestParam(value = "size", required = false, defaultValue = "10") int size){
-        return new ResponseEntity<>(userService.getAds(page, size), HttpStatus.OK);
+    public ResponseEntity<?> getAds(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "10") int size, @RequestParam(value = "search", defaultValue = "") String search){
+        return new ResponseEntity<>(userService.getAds(page, size, search), HttpStatus.OK);
     }
 
     @GetMapping("/{id}" + ADS)
-    public ResponseEntity<?> getUserAds(@PathVariable("id") long id){
-        return ResponseEntity.ok().body(userService.getUserAds(id));
+    public ResponseEntity<?> getUserAds(@PathVariable("id") long id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "") String search){
+        return ResponseEntity.ok().body(userService.getUserAds(id, page, size, search));
     }
 
     @PostMapping(ADS)
@@ -105,9 +102,10 @@ public class UserController {
 
     }
 
-    @PutMapping(ADS)
-    public ResponseEntity<?> editAd(@NotNull @RequestParam("data") String data, MultipartHttpServletRequest request) throws JsonProcessingException {
+    @PatchMapping(ADS + "/{id}")
+    public ResponseEntity<?> editAd(@PathVariable("id") long id,@NotNull @RequestParam("data") String data, MultipartHttpServletRequest request) throws JsonProcessingException {
         AdDTO ad = objectMapper.readValue(data, AdDTO.class);
+        ad.setId(id);
         Map< String, MultipartFile> photos;
         photos = request.getFileMap();
         userService.editAd(ad, photos);
@@ -128,9 +126,10 @@ public class UserController {
     // House type
 
     @GetMapping(HOUSE_TYPES)
-    public ResponseEntity<?> getHouseTypes(){
-        return ResponseEntity.ok().body(userService.getHouseTypes());
+    public ResponseEntity<?> getHouseTypes(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam( value = "size", defaultValue = "10") int size){
+        return ResponseEntity.ok().body(userService.getHouseTypes(page, size));
     }
+
     @GetMapping( HOUSE_TYPES + "/{id}")
     public ResponseEntity<?> getHouseTypeById(@PathVariable("id") Long id){
         return ResponseEntity.ok().body(userService.getHouseType(id));
@@ -152,13 +151,14 @@ public class UserController {
     // Saved List
 
     @GetMapping(SAVED_LIST)
-    public ResponseEntity<?> getMySavedList(){
-        return ResponseEntity.ok(userService.getMySavedList());
+    public ResponseEntity<?> getMySavedList(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam( value = "size", defaultValue = "10") int size){
+        return ResponseEntity.ok(userService.getMySavedList(page, size));
     }
 
     @PutMapping(SAVED_LIST + "/{adId}")
     public ResponseEntity<?> triggerSavedList(@PathVariable("adId") Long adId){
-        return userService.triggerSavedList(adId);
+        userService.triggerSavedList(adId);
+        return ResponseEntity.noContent().build();
     }
 
 

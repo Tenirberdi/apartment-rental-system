@@ -7,8 +7,12 @@ INSERT INTO `house_types`( `type` ) values ('Family House'), ('Town House');
 INSERT INTO `ads`( `area`, `available`, `bath_room_amount`, `bed_room_amount`, `date_of_posting`, `description`, `enabled`, `furniture`,
                    `kitchen_room_amount`, `location`, `price_per_month`, `title`, `total_room_amount`, `which_floor`, `house_type_id`,
                    `renter_id`, `promotion_type_id`) VALUES
-    (40, 1, 1, 1, '2022-01-01', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Don',
+    (40, 1, 1, 1, '2022-01-01', 'tiny description',
      1, 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean', 1,
-     'Bishkek, ahunbaeva 23', 400, 'Big New Family House', 4, 1, 1, 2, null), (40, 1, 1, 1, '2022-01-01', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Don',
-                                                                               1, 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean', 1,
-                                                                               'Bishkek, ahunbaeva 23', 400, 'Town House', 4, 1, 1, 2, null);
+     'Bishkek, ahunbaeva 23', 400, 'Big New Family House', 4, 1, 1, 2, null),
+    (40, 1, 1, 1, '2022-01-01', 'test ',
+     1, 'chairs, tables', 1,
+     'Bishkek, ahunbaeva 23', 400, 'Test', 4, 1, 1, 2, null),
+    (40, 1, 1, 1, '2022-01-01', 'big description',
+     1, 'none', 1,
+     'Bishkek, ahunbaeva 23', 400, 'Town House', 4, 1, 1, 2, null);

@@ -1,4 +1,4 @@
-package com.example.system.DTOs;
+package com.example.system.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,9 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaginationMetaDataDTO {
-    private int totalElementCount;
-    private int pageSize;
-    private int firstPage;
-    private int currentPage;
-    private int lastPage;
+    private int totalRecords;
+    private int totalPages;
 }

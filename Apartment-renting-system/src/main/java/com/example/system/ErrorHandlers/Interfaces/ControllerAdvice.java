@@ -1,4 +1,4 @@
-package com.example.system.ErrorHandlers.Interfaces;
+package com.example.system.errorhandlers.interfaces;
 
 import org.springframework.stereotype.Component;
 

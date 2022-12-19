@@ -1,6 +1,11 @@
-package com.example.system.EndPoints;
+package com.example.system.endpoint;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 
 public final class URLs {
+    @Autowired
+    private Environment env;
     private URLs() {}
     // base urls
     public static final String ADMIN_BASE_URL = "/admin";

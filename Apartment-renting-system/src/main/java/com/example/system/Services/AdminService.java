@@ -1,15 +1,16 @@
-package com.example.system.Services;
+package com.example.system.services;
 
 
-import com.example.system.DTOs.HouseTypeDTO;
-import com.example.system.DTOs.PromotionDTO;
-import com.example.system.Entities.Ad;
-import com.example.system.Entities.HouseType;
-import com.example.system.Entities.PromotionType;
-import com.example.system.Entities.User;
-import com.example.system.Repositories.*;
-import com.example.system.Utils.Converter;
-import com.example.system.Utils.PhotoUtil;
+import com.example.system.dtos.HouseTypeDTO;
+import com.example.system.dtos.PromotionDTO;
+import com.example.system.models.Ad;
+import com.example.system.models.HouseType;
+import com.example.system.models.PromotionType;
+import com.example.system.models.User;
+import com.example.system.repositories.*;
+import com.example.system.utilities.Converter;
+import com.example.system.utilities.PhotoUtil;
+import com.example.system.utilities.ResponseMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import javax.validation.Valid;
 @Service
 @Validated
 public class AdminService extends UserService{
+    private final ResponseMapper responseMapper ;
     private final ViewersRepo viewersRepo;
     private final PromotionExpirationRepo promotionExpirationRepo;
     private final UserRepo userRepo;
@@ -37,8 +39,9 @@ public class AdminService extends UserService{
     private final SavedListRepo savedListRepo;
 
     @Autowired
-    public AdminService(PhotoRepo photoRepo, PhotoUtil photoUtil, UserRepo userRepo, AdRepo adRepo, PasswordEncoder passwordEncoder, RoleRepo roleRepo, HouseTypeRepo houseTypeRepo, PromotionTypeRepo promotionTypeRepo, ViewersRepo viewersRepo, PromotionExpirationRepo promotionExpirationRepo, UserRepo userRepo1, AdRepo adRepo1, PasswordEncoder passwordEncoder1, RoleRepo roleRepo1, HouseTypeRepo houseTypeRepo1, PromotionTypeRepo promotionTypeRepo1, Converter converter, SavedListRepo savedListRepo) {
-        super(viewersRepo, promotionExpirationRepo, userRepo, adRepo, passwordEncoder, roleRepo, houseTypeRepo, promotionTypeRepo, photoRepo, converter, savedListRepo, photoUtil);
+    public AdminService(PhotoRepo photoRepo, PhotoUtil photoUtil, UserRepo userRepo, AdRepo adRepo, PasswordEncoder passwordEncoder, RoleRepo roleRepo, HouseTypeRepo houseTypeRepo, PromotionTypeRepo promotionTypeRepo, ResponseMapper responseMapper, ViewersRepo viewersRepo, PromotionExpirationRepo promotionExpirationRepo, UserRepo userRepo1, AdRepo adRepo1, PasswordEncoder passwordEncoder1, RoleRepo roleRepo1, HouseTypeRepo houseTypeRepo1, PromotionTypeRepo promotionTypeRepo1, Converter converter, SavedListRepo savedListRepo) {
+        super(viewersRepo, promotionExpirationRepo, userRepo, adRepo, passwordEncoder, roleRepo, houseTypeRepo, promotionTypeRepo, photoRepo, converter, savedListRepo, responseMapper, photoUtil);
+        this.responseMapper = responseMapper;
         this.viewersRepo = viewersRepo;
         this.promotionExpirationRepo = promotionExpirationRepo;
         this.userRepo = userRepo1;
@@ -88,6 +91,7 @@ public class AdminService extends UserService{
     //House types
     public void editHouseType(@Valid HouseTypeDTO houseType){
         if(houseTypeRepo.findById(houseType.getId()).isPresent()){
+
             houseTypeRepo.save(HouseType.builder()
                     .id(houseType.getId())
                     .type(houseType.getType()).build());

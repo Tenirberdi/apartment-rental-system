@@ -16,12 +16,30 @@
 	<properties>
 		<java.version>17</java.version>
 	</properties>
+<!--	&lt;!&ndash; Add Spring Cloud GCP Dependency BOM &ndash;&gt;-->
+<!--	<dependencyManagement>-->
+<!--		<dependencies>-->
+<!--			<dependency>-->
+<!--				<groupId>com.google.cloud</groupId>-->
+<!--				<artifactId>spring-cloud-gcp-dependencies</artifactId>-->
+<!--				<version>3.3.0</version>-->
+<!--				<type>pom</type>-->
+<!--				<scope>import</scope>-->
+<!--			</dependency>-->
+<!--		</dependencies>-->
+<!--	</dependencyManagement>-->
 	<dependencies>
-		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+<!--		<dependency>-->
+<!--			<groupId>com.google.cloud</groupId>-->
+<!--			<artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>-->
+<!--		</dependency>-->
+
+
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.12</version>
+			<version>1.18.24</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-mail -->
@@ -36,6 +54,11 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-actuator</artifactId>-->
+<!--		</dependency>-->
 		<!-- spring security -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -73,11 +96,9 @@
 			<artifactId>jjwt</artifactId>
 			<version>0.9.1</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
 		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-			<version>8.0.31</version>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
 
 		<dependency>

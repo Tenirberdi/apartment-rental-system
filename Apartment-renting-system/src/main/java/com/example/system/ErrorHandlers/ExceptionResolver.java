@@ -1,6 +1,6 @@
-package com.example.system.ErrorHandlers;
+package com.example.system.errorhandlers;
 
-import com.example.system.ErrorHandlers.Interfaces.ControllerAdvice;
+import com.example.system.errorhandlers.interfaces.ControllerAdvice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;

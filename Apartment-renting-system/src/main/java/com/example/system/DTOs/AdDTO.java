@@ -1,6 +1,6 @@
-package com.example.system.DTOs;
+package com.example.system.dtos;
 
-import com.example.system.Utils.CustomDateFormatter;
+import com.example.system.utilities.CustomDateFormatter;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +20,7 @@ import java.util.List;
 public class AdDTO {
     private Long id;
     @NotEmpty(message = "Title can't be empty")
+    @Size(max = 70, message = "Max allowed 70 characters")
     private String title;
     @Size(max = 300, message = "Max allowed 300 characters")
     private String description;
@@ -29,11 +30,11 @@ public class AdDTO {
     @NotNull
     private Integer totalRoomAmount;
     @NotNull
-    private int bathRoomAmount;
+    private Integer bathRoomAmount;
     @NotNull
-    private int bedRoomAmount;
+    private Integer bedRoomAmount;
     @NotNull
-    private int kitchenRoomAmount;
+    private Integer kitchenRoomAmount;
     @NotNull
     private Integer area;
     @NotNull

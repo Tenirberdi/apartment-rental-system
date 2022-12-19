@@ -1,4 +1,4 @@
-package com.example.system.Projections;
+package com.example.system.projections;
 
 import java.sql.Date;
 

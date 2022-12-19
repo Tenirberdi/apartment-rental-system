@@ -1,6 +1,6 @@
-package com.example.system.DTOs;
+package com.example.system.dtos;
 
-import com.example.system.Utils.CustomDateFormatter;
+import com.example.system.utilities.CustomDateFormatter;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

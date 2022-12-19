@@ -1,6 +1,6 @@
-package com.example.system.Security.Jwt;
+package com.example.system.security.Jwt;
 
-import com.example.system.ErrorHandlers.ExceptionHandlerFilter;
+import com.example.system.errorhandlers.ExceptionHandlerFilter;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.DefaultSecurityFilterChain;

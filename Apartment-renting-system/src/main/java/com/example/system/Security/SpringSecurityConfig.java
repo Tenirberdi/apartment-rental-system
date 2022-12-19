@@ -1,11 +1,11 @@
-package com.example.system.Security;
+package com.example.system.security;
 
-import com.example.system.ErrorHandlers.ExceptionResolver;
-import com.example.system.ErrorHandlers.CustomAuthenticationFailureHandler;
-import com.example.system.ErrorHandlers.RestAccessDeniedHandler;
-import com.example.system.ErrorHandlers.RestAuthenticationEntryPoint;
-import com.example.system.Security.Jwt.JwtConfigurer;
-import com.example.system.Security.Jwt.JwtTokenProvider;
+import com.example.system.errorhandlers.ExceptionResolver;
+import com.example.system.errorhandlers.CustomAuthenticationFailureHandler;
+import com.example.system.errorhandlers.RestAccessDeniedHandler;
+import com.example.system.errorhandlers.RestAuthenticationEntryPoint;
+import com.example.system.security.Jwt.JwtConfigurer;
+import com.example.system.security.Jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import static com.example.system.EndPoints.URLs.*;
+import static com.example.system.endpoint.URLs.*;
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {

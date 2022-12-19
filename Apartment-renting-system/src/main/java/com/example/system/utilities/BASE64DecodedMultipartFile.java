@@ -1,4 +1,4 @@
-package com.example.system.Utils;
+package com.example.system.utilities;
 
 import org.springframework.web.multipart.MultipartFile;
 

@@ -1,4 +1,4 @@
-package com.example.system.DTOs;
+package com.example.system.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

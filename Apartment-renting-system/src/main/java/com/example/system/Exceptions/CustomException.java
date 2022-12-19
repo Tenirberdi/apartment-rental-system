@@ -1,4 +1,4 @@
-package com.example.system.Exceptions;
+package com.example.system.exceptions;
 
 public class CustomException extends Exception{
     public CustomException(String errorMessage){

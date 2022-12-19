@@ -1,10 +1,10 @@
-package com.example.system.Services;
+package com.example.system.services;
 
-import com.example.system.DTOs.SignUpDTO;
-import com.example.system.Entities.User;
-import com.example.system.Exceptions.CustomNotFoundException;
-import com.example.system.Repositories.RoleRepo;
-import com.example.system.Repositories.UserRepo;
+import com.example.system.dtos.SignUpDTO;
+import com.example.system.models.User;
+import com.example.system.exceptions.CustomNotFoundException;
+import com.example.system.repositories.RoleRepo;
+import com.example.system.repositories.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;

@@ -1,4 +1,4 @@
-package com.example.system.Projections;
+package com.example.system.projections;
 
 public interface UserStatisticsView {
     Long getDisabled_users_id();

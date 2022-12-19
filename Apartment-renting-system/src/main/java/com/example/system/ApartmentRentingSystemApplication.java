@@ -1,18 +1,17 @@
 package com.example.system;
 
+import com.example.system.utilities.PhotoUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
-import org.springframework.mail.MailSender;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import javax.sql.DataSource;
 import java.util.Properties;
 
 @SpringBootApplication
@@ -20,11 +19,18 @@ import java.util.Properties;
 public class ApartmentRentingSystemApplication {
 	@Autowired
 	Environment environment;
+	@Autowired
+	private PhotoUtil photoUtil;
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApartmentRentingSystemApplication.class, args);
+	}
 
-
+	@Bean
+	public CommandLineRunner CommandLineRunnerBean() {
+		return (args) -> {
+			photoUtil.cleanInvalidPhotos();
+		};
 	}
 
 	@Bean

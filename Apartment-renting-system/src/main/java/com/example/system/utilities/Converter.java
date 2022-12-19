@@ -1,7 +1,7 @@
-package com.example.system.Utils;
+package com.example.system.utilities;
 
-import com.example.system.DTOs.AdDTO;
-import com.example.system.Projections.AdView;
+import com.example.system.dtos.AdDTO;
+import com.example.system.projections.AdView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

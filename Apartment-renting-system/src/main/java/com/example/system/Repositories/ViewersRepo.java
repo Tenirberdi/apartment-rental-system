@@ -1,6 +1,6 @@
-package com.example.system.Repositories;
+package com.example.system.repositories;
 
-import com.example.system.Entities.Viewers;
+import com.example.system.models.Viewers;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

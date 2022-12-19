@@ -1,8 +1,7 @@
-package com.example.system.Repositories;
+package com.example.system.repositories;
 
-import com.example.system.Entities.PromotionType;
+import com.example.system.models.PromotionType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository

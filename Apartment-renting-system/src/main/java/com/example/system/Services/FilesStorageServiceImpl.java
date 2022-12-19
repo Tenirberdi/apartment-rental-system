@@ -1,7 +1,6 @@
-package com.example.system.Services;
+package com.example.system.services;
 
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.FileAlreadyExistsException;
@@ -10,10 +9,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
 import java.util.stream.Stream;
 
-import com.example.system.Services.Interfaces.FilesStorageService;
+import com.example.system.services.Interfaces.FilesStorageService;
 import net.bytebuddy.utility.RandomString;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.Resource;
@@ -73,7 +71,8 @@ public class FilesStorageServiceImpl implements FilesStorageService {
             } else {
                 throw new RuntimeException("Could not read the file!");
             }
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e) {
             throw new RuntimeException("Error: " + e.getMessage());
         }
     }
@@ -89,7 +88,7 @@ public class FilesStorageServiceImpl implements FilesStorageService {
         try {
             Files.delete(root.resolve(fileName));
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during deleting file: " + e.getMessage());
+//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during deleting file: " + e.getMessage());
         }
 
         return true;
